@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.StudentTask" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primary Colors -->
+        <item name="colorPrimary">#4CAF50</item>
+        <item name="colorPrimaryVariant">#2E7D32</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+
+        <!-- Secondary Colors -->
+        <item name="colorSecondary">#FF6B35</item>
+        <item name="colorSecondaryVariant">#E64A19</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+
+        <!-- Background Colors -->
+        <item name="android:colorBackground">#FAFAFA</item>
+        <item name="colorSurface">#FFFFFF</item>
+        <item name="colorOnSurface">#1C1B1F</item>
+
+        <!-- Error Colors -->
+        <item name="colorError">#B3261E</item>
+        <item name="colorOnError">#FFFFFF</item>
+
+        <!-- Text Colors -->
+        <item name="android:textColorPrimary">#1C1B1F</item>
+        <item name="android:textColorSecondary">#49454F</item>
+
+        <!-- Window Attributes -->
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">#E8F5E8</item>
+        <item name="android:navigationBarColor">#FFFFFF</item>
+
+        <!-- Button Styles -->
+        <item name="materialButtonStyle">@style/Widget.Material3.Button</item>
+        <item name="borderlessButtonStyle">@style/Widget.Material3.Button.TextButton</item>
+
+        <!-- Card Styles -->
+        <item name="materialCardViewStyle">@style/Widget.Material3.CardView.Elevated</item>
+
+    </style>
+
+    <!-- Custom Button Styles -->
+    <style name="AppButton" parent="Widget.Material3.Button">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+
+    <style name="AppButton.Primary" parent="AppButton">
+        <item name="backgroundTint">#FF6B35</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+
+    <style name="AppButton.Secondary" parent="AppButton">
+        <item name="backgroundTint">#4CAF50</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+
+    <style name="AppButton.Danger" parent="AppButton">
+        <item name="backgroundTint">#F44336</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+
+</resources>

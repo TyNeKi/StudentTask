@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors -->
+    <color name="primary">#4CAF50</color>
+    <color name="primary_dark">#2E7D32</color>
+    <color name="primary_light">#81C784</color>
+
+    <!-- Secondary Colors -->
+    <color name="secondary">#FF6B35</color>
+    <color name="secondary_dark">#E64A19</color>
+    <color name="secondary_light">#FF8A65</color>
+
+    <!-- Background Colors -->
+    <color name="background_gradient_start">#667EEA</color>
+    <color name="background_gradient_center">#764BA2</color>
+    <color name="background_gradient_end">#F093FB</color>
+    <color name="background_light">#FAFAFA</color>
+    <color name="surface_white">#FFFFFF</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#1C1B1F</color>
+    <color name="text_secondary">#49454F</color>
+    <color name="text_hint">#938F99</color>
+    <color name="text_white">#FFFFFF</color>
+
+    <!-- Status Colors -->
+    <color name="success">#4CAF50</color>
+    <color name="success_light">#E8F5E8</color>
+    <color name="warning">#FF9800</color>
+    <color name="error">#F44336</color>
+    <color name="error_light">#FFEBEE</color>
+
+    <!-- Card and UI Colors -->
+    <color name="card_background">#FFFFFF</color>
+    <color name="card_border">#E0E0E0</color>
+    <color name="divider">#E0E0E0</color>
+
+    <!-- Legacy Colors (for compatibility) -->
+    <color name="dashboard_bg">#1A2B4C</color>
+    <color name="card_white">#FFFFFF</color>
+    <color name="text_main">#FFFFFF</color>
+    <color name="text_secondary_old">#757575</color>
+    <color name="accent_blue">#3A5A92</color>
+
+</resources>
