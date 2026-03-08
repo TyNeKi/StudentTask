@@ -98,7 +98,7 @@
                         android:text="🗑️ CLEAR ALL"
                         android:textColor="#FFFFFF"
                         android:textSize="12sp"
-                        android:textAllCaps="false"
+                        android:textAllCaps="true"
                         android:paddingStart="12dp"
                         android:paddingEnd="12dp" />
 
