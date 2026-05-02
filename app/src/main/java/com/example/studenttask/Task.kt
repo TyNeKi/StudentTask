@@ -8,5 +8,6 @@ data class Task(
     val description: String = "",
     val date: String,
     val time: String,
-    val status: String = "PENDING"
+    val status: String = "PENDING",
+    val priority: String = "MEDIUM" // LOW, MEDIUM, HIGH
 ) : Serializable
