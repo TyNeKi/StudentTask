@@ -13,19 +13,27 @@ class TaskReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val title = intent.getStringExtra("title") ?: "Task Reminder"
 
+        // Use taskId as notification ID so multiple reminders don't overwrite each other.
+        // Falls back to a fixed ID if taskId is missing.
+        val taskId = intent.getLongExtra("taskId", 0L)
+        val notificationId = if (taskId != 0L) taskId.toInt() else 101
+
         val builder = NotificationCompat.Builder(context, "STUDENT_TASK_CHANNEL")
             .setSmallIcon(android.R.drawable.ic_popup_reminder)
-            .setContentTitle("Student Task Tracker")
+            .setContentTitle("📚 Student Task Tracker")
             .setContentText("Reminder: $title")
-            // REQUIRED for Pop-up (Heads-up)
+            .setStyle(NotificationCompat.BigTextStyle().bigText("Don't forget: $title is due now!"))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
-            // REQUIRED for Lockscreen visibility
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setAutoCancel(true)
 
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-            NotificationManagerCompat.from(context).notify(101, builder.build())
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            NotificationManagerCompat.from(context).notify(notificationId, builder.build())
         }
     }
 }
