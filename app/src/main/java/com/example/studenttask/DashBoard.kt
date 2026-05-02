@@ -10,7 +10,6 @@ import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
-import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -20,6 +19,12 @@ class DashBoard : AppCompatActivity() {
 
     private lateinit var taskManager: TaskManager
     private lateinit var taskContainer: LinearLayout
+
+    // Cycles: "ALL" -> "PENDING" -> "COMPLETED"
+    private var currentFilter = "ALL"
+
+    // Cycles: "DATE" -> "PRIORITY"
+    private var currentSort = "DATE"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,12 +45,46 @@ class DashBoard : AppCompatActivity() {
             startActivity(Intent(this, SaveTask::class.java))
         }
 
+        // Confirm before wiping all tasks
         findViewById<Button>(R.id.btnClear).setOnClickListener {
-            taskManager.clearAllTasks()
+            if (taskManager.getTasks().isEmpty()) {
+                Toast.makeText(this, "No tasks to clear.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            AlertDialog.Builder(this)
+                .setTitle("Clear All Tasks")
+                .setMessage("Are you sure you want to delete all tasks? This cannot be undone.")
+                .setPositiveButton("Clear All") { _, _ ->
+                    taskManager.clearAllTasks()
+                    refreshTasks()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+
+        // Sort button cycles between DATE and PRIORITY sort
+        val sortBtn = findViewById<Button>(R.id.sortBtn)
+        sortBtn.setOnClickListener {
+            currentSort = if (currentSort == "DATE") "PRIORITY" else "DATE"
+            sortBtn.text = if (currentSort == "DATE") "Sort: Date" else "Sort: Priority"
             refreshTasks()
         }
 
-        findViewById<Button>(R.id.sortBtn).setOnClickListener { refreshTasks() }
+        // Filter button cycles between ALL, PENDING, COMPLETED
+        val filterBtn = findViewById<Button>(R.id.filterBtn)
+        filterBtn.setOnClickListener {
+            currentFilter = when (currentFilter) {
+                "ALL" -> "PENDING"
+                "PENDING" -> "COMPLETED"
+                else -> "ALL"
+            }
+            filterBtn.text = when (currentFilter) {
+                "PENDING" -> "Filter: Pending"
+                "COMPLETED" -> "Filter: Done"
+                else -> "Filter: All"
+            }
+            refreshTasks()
+        }
     }
 
     private fun createNotificationChannel() {
@@ -69,28 +108,52 @@ class DashBoard : AppCompatActivity() {
 
     private fun refreshTasks() {
         taskContainer.removeAllViews()
-        val tasks = taskManager.getTasks()
+
+        // Apply filter
+        val filtered = when (currentFilter) {
+            "PENDING" -> taskManager.getTasks().filter { it.status == "PENDING" }
+            "COMPLETED" -> taskManager.getTasks().filter { it.status == "COMPLETED" }
+            else -> taskManager.getTasks()
+        }
+
+        // Apply sort
+        val tasks = if (currentSort == "PRIORITY") {
+            taskManager.getSortedByPriority(filtered)
+        } else {
+            taskManager.getSortedByDate(filtered)
+        }
+
+        // Update task count label
+        val pending = taskManager.getPendingCount()
+        val total = taskManager.getTasks().size
+        findViewById<TextView>(R.id.tvTaskCount).text = "$pending pending • $total total"
 
         if (tasks.isEmpty()) {
             val emptyTv = TextView(this).apply {
-                text = "No tasks yet!"
+                text = if (currentFilter == "ALL") "No tasks yet! Tap + to add one." else "No ${currentFilter.lowercase()} tasks."
                 gravity = Gravity.CENTER
                 setPadding(0, 100, 0, 0)
+                setTextColor(Color.GRAY)
+                textSize = 16f
             }
             taskContainer.addView(emptyTv)
             return
         }
 
         for (task in tasks) {
+            val priorityColor = when (task.priority) {
+                "HIGH" -> Color.parseColor("#FFCDD2")   // light red
+                "MEDIUM" -> Color.parseColor("#FFF9C4") // light yellow
+                else -> Color.parseColor("#E3F2FD")     // light blue
+            }
+
             val card = CardView(this).apply {
-                // FIX: Use MATCH_PARENT and WRAP_CONTENT in ALL CAPS
                 val params = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 )
                 params.setMargins(0, 0, 0, 32)
                 layoutParams = params
-
                 radius = 24f
                 cardElevation = 6f
                 setCardBackgroundColor(if (task.status == "COMPLETED") Color.parseColor("#E8F5E9") else Color.WHITE)
@@ -102,12 +165,34 @@ class DashBoard : AppCompatActivity() {
                 setPadding(48, 40, 48, 40)
             }
 
+            // Title row with priority badge
+            val titleRow = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+            }
+
             val titleTv = TextView(this).apply {
                 text = "${if (task.status == "COMPLETED") "✅ " else "⏳ "}${task.title}"
                 textSize = 18f
                 setTextColor(Color.BLACK)
                 setTypeface(null, Typeface.BOLD)
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             }
+
+            val priorityBadge = TextView(this).apply {
+                text = task.priority
+                textSize = 11f
+                setTextColor(Color.DKGRAY)
+                setTypeface(null, Typeface.BOLD)
+                setPadding(16, 8, 16, 8)
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    setColor(priorityColor)
+                    cornerRadius = 24f
+                }
+            }
+
+            titleRow.addView(titleTv)
+            titleRow.addView(priorityBadge)
 
             val detailsTv = TextView(this).apply {
                 text = "📅 ${task.date}  •  ⏰ ${task.time}"
@@ -116,8 +201,24 @@ class DashBoard : AppCompatActivity() {
                 setPadding(0, 8, 0, 0)
             }
 
-            layout.addView(titleTv)
-            layout.addView(detailsTv)
+            // Show description preview if available
+            if (task.description.isNotEmpty()) {
+                val descTv = TextView(this).apply {
+                    text = task.description
+                    textSize = 13f
+                    setTextColor(Color.GRAY)
+                    setPadding(0, 4, 0, 0)
+                    maxLines = 1
+                    ellipsize = android.text.TextUtils.TruncateAt.END
+                }
+                layout.addView(titleRow)
+                layout.addView(detailsTv)
+                layout.addView(descTv)
+            } else {
+                layout.addView(titleRow)
+                layout.addView(detailsTv)
+            }
+
             card.addView(layout)
             taskContainer.addView(card)
         }
@@ -129,11 +230,21 @@ class DashBoard : AppCompatActivity() {
 
         AlertDialog.Builder(this)
             .setTitle(task.title)
-            .setMessage("Due: ${task.date} ${task.time}\n\nDescription: $descriptionText")
+            .setMessage(
+                "Priority: ${task.priority}\n" +
+                "Due: ${task.date} at ${task.time}\n\n" +
+                "Description: $descriptionText"
+            )
             .setNeutralButton("Back") { dialog, _ -> dialog.dismiss() }
             .setNegativeButton("Delete") { _, _ ->
-                taskManager.deleteTask(task.id)
-                refreshTasks()
+                AlertDialog.Builder(this)
+                    .setMessage("Delete \"${task.title}\"?")
+                    .setPositiveButton("Delete") { _, _ ->
+                        taskManager.deleteTask(task.id)
+                        refreshTasks()
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
             }
             .setPositiveButton(statusText) { _, _ ->
                 val newStatus = if (task.status == "PENDING") "COMPLETED" else "PENDING"
